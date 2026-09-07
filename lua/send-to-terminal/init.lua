@@ -296,6 +296,50 @@ function M.paste_last_output(opts)
   history.paste_last_output_to_current_buffer(opts)
 end
 
+---Toggle automatic pasting of commented output below command in buffer
+---@param enabled? boolean
+---@return boolean new_state
+function M.toggle_paste_output(enabled)
+  local new_val = config.toggle_paste_output(enabled)
+  utils.notify(string.format("Auto paste output to buffer: %s", new_val and "ON" or "OFF"))
+  return new_val
+end
+
+---Toggle history tracking
+---@param enabled? boolean
+---@return boolean new_state
+function M.toggle_history(enabled)
+  local new_val = config.toggle_history(enabled)
+  utils.notify(string.format("History tracking: %s", new_val and "ON" or "OFF"))
+  return new_val
+end
+
+---Toggle automatic copying of outcome to clipboard
+---@param enabled? boolean
+---@return boolean new_state
+function M.toggle_copy_output(enabled)
+  local new_val = config.toggle_copy_output(enabled)
+  utils.notify(string.format("Auto copy outcome to clipboard: %s", new_val and "ON" or "OFF"))
+  return new_val
+end
+
+---Display current configuration and terminal target status
+function M.status()
+  local opts = config.get()
+  local hist_opts = opts.history or {}
+  local lines = {
+    "=== send-to-terminal Status ===",
+    string.format("  Backend:                 %s", opts.backend or "auto"),
+    string.format("  History Tracking:        %s", hist_opts.enabled and "ON" or "OFF"),
+    string.format("  Auto Paste Output:       %s", hist_opts.paste_output_to_buffer and "ON" or "OFF"),
+    string.format("  Auto Copy to Clipboard:  %s", hist_opts.copy_output_to_clipboard and "ON" or "OFF"),
+    string.format("  Bracketed Paste:         %s", opts.bracketed_paste and "ON" or "OFF"),
+    string.format("  History Total Entries:   %d", #history.entries),
+  }
+  print(table.concat(lines, "\n"))
+  utils.notify(table.concat(lines, "\n"))
+end
+
 ---Clear execution history
 function M.clear_history()
   history.clear()

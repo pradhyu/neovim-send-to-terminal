@@ -183,3 +183,35 @@ T.run_test("End-to-End Execution Flow with History Logging", function()
 
   vim.api.nvim_buf_delete(bufnr, { force = true })
 end)
+
+T.run_test("Dynamic Settings Toggling (paste_output, history, copy_output)", function()
+  config.setup({
+    history = {
+      enabled = true,
+      paste_output_to_buffer = true,
+      copy_output_to_clipboard = true,
+    },
+  })
+
+  -- Toggle paste output off then on
+  local paste_state = stt.toggle_paste_output()
+  T.assert_eq(paste_state, false, "toggle_paste_output should toggle to false")
+  T.assert_eq(config.get().history.paste_output_to_buffer, false, "Config should reflect false")
+
+  paste_state = stt.toggle_paste_output()
+  T.assert_eq(paste_state, true, "toggle_paste_output should toggle back to true")
+
+  -- Explicit value
+  stt.toggle_paste_output(false)
+  T.assert_eq(config.get().history.paste_output_to_buffer, false, "Explicit toggle should set to false")
+
+  -- Toggle history
+  local hist_state = stt.toggle_history()
+  T.assert_eq(hist_state, false, "toggle_history should toggle to false")
+  T.assert_eq(config.get().history.enabled, false, "Config should reflect false")
+
+  -- Toggle copy output
+  local copy_state = stt.toggle_copy_output()
+  T.assert_eq(copy_state, false, "toggle_copy_output should toggle to false")
+  T.assert_eq(config.get().history.copy_output_to_clipboard, false, "Config should reflect false")
+end)

@@ -138,4 +138,40 @@ function M.get()
   return M.options
 end
 
+---Toggle paste_output_to_buffer option
+---@param val? boolean
+---@return boolean new_state
+function M.toggle_paste_output(val)
+  if val ~= nil then
+    M.options.history.paste_output_to_buffer = val
+  else
+    M.options.history.paste_output_to_buffer = not M.options.history.paste_output_to_buffer
+  end
+  return M.options.history.paste_output_to_buffer
+end
+
+---Toggle history recording option
+---@param val? boolean
+---@return boolean new_state
+function M.toggle_history(val)
+  if val ~= nil then
+    M.options.history.enabled = val
+  else
+    M.options.history.enabled = not M.options.history.enabled
+  end
+  return M.options.history.enabled
+end
+
+---Toggle copy_output_to_clipboard option
+---@param val? boolean
+---@return boolean new_state
+function M.toggle_copy_output(val)
+  if val ~= nil then
+    M.options.history.copy_output_to_clipboard = val
+  else
+    M.options.history.copy_output_to_clipboard = not M.options.history.copy_output_to_clipboard
+  end
+  return M.options.history.copy_output_to_clipboard
+end
+
 return M
