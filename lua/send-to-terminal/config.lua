@@ -14,6 +14,8 @@ local M = {}
 ---@field auto_open? boolean Automatically open terminal split if none is open
 ---@field split? string Command to open terminal window (e.g. "botright 15split")
 ---@field focus_on_send? boolean Jump focus to terminal after sending
+---@field shells? table<string, string> Shell command per language (e.g. powershell = "pwsh", bash = "bash")
+---@field default_shell? string Default shell command fallback
 
 ---@class STTMarkdownOptions
 ---@field strip_prompts? boolean Automatically strip leading prompts like $, >, PS>, etc.
@@ -35,6 +37,17 @@ M.defaults = {
     auto_open = true,
     split = "botright 15split",
     focus_on_send = false,
+    shells = {
+      powershell = "pwsh",
+      pwsh = "pwsh",
+      ps1 = "pwsh",
+      bash = "bash",
+      sh = "sh",
+      zsh = "zsh",
+      fish = "fish",
+      python = "python3",
+    },
+    default_shell = nil,
   },
 
   markdown = {

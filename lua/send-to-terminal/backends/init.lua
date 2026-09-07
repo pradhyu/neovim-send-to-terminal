@@ -67,16 +67,20 @@ end
 ---Send text through the resolved backend
 ---@param text string
 ---@param opts? STTOptions
+---@param lang? string
+---@param on_done? fun(success: boolean)
 ---@return boolean success
-function M.send(text, opts)
+function M.send(text, opts, lang, on_done)
   opts = opts or config.get()
   local backend = M.get_backend(opts.backend)
   if not backend then
     utils.notify("No valid terminal backend found.", vim.log.levels.ERROR)
+    if on_done then on_done(false) end
     return false
   end
 
-  return backend.send(text, opts)
+  local res = backend.send(text, opts, lang, on_done)
+  return res ~= false
 end
 
 return M

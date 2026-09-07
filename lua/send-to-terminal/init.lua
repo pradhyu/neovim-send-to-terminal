@@ -1,5 +1,6 @@
 local config = require("send-to-terminal.config")
 local utils = require("send-to-terminal.utils")
+local state = require("send-to-terminal.state")
 local extractor = require("send-to-terminal.core.extractor")
 local sanitizer = require("send-to-terminal.core.sanitizer")
 local highlighter = require("send-to-terminal.core.highlighter")
@@ -16,21 +17,25 @@ end
 ---Send arbitrary text string to terminal backend
 ---@param text string
 ---@param opts? STTOptions
+---@param lang? string
+---@param on_done? fun(success: boolean)
 ---@return boolean success
-function M.send_text(text, opts)
+function M.send_text(text, opts, lang, on_done)
   opts = opts or config.get()
   local lines = utils.split_lines(text)
   local payload = sanitizer.format_payload(lines, opts)
-  return backends.send(payload, opts)
+  return backends.send(payload, opts, lang, on_done)
 end
 
 ---Execute an extraction result (highlight, format, send)
 ---@param result STTExtractionResult|nil
 ---@param opts? STTOptions
+---@param on_done? fun(success: boolean)
 ---@return boolean success
-local function execute_result(result, opts)
+local function execute_result(result, opts, on_done)
   opts = opts or config.get()
   if not result or not result.text or result.text == "" then
+    if on_done then on_done(false) end
     return false
   end
 
@@ -47,8 +52,20 @@ local function execute_result(result, opts)
   -- Format payload with bracketed paste & newlines
   local payload = sanitizer.format_payload(result.sanitized_lines, opts)
 
-  -- Send via backend
-  return backends.send(payload, opts)
+  local done_called = false
+  local function done_wrapper(status)
+    if not done_called then
+      done_called = true
+      if on_done then on_done(status) end
+    end
+  end
+
+  -- Send via backend with language detection
+  local ok = backends.send(payload, opts, result.lang, done_wrapper)
+  if ok and not done_called then
+    done_wrapper(true)
+  end
+  return ok
 end
 
 ---Send current line or inline backtick command
@@ -104,15 +121,14 @@ function M.send_step(opts)
     return false
   end
 
-  local ok = execute_result(res, opts)
-  if ok and res.range then
-    local next_line = extractor.find_next_executable_line(bufnr, res.range.end_line, res.lang, opts)
-    if next_line then
-      vim.api.nvim_win_set_cursor(winnr, { next_line, 0 })
+  return execute_result(res, opts, function(ok)
+    if ok and res.range then
+      local next_line = extractor.find_next_executable_line(bufnr, res.range.end_line, res.lang, opts)
+      if next_line then
+        vim.api.nvim_win_set_cursor(winnr, { next_line, 0 })
+      end
     end
-  end
-
-  return ok
+  end)
 end
 
 ---Send entire buffer
@@ -183,6 +199,48 @@ end
 function M.send_motion()
   vim.go.operatorfunc = "v:lua.require'send-to-terminal'.opfunc"
   vim.api.nvim_feedkeys("g@", "n", false)
+end
+
+---Interactively select or switch the target terminal buffer
+---@param lang? string
+---@param callback? fun(bufnr: integer|nil)
+function M.select_terminal(lang, callback)
+  local neovim_backend = require("send-to-terminal.backends.neovim")
+  neovim_backend.interactive_select_terminal(lang, callback)
+end
+
+---Change the default shell command for a language (e.g. powershell -> pwsh, bash -> zsh)
+---@param lang string
+---@param shell_cmd string
+function M.set_default_shell(lang, shell_cmd)
+  state.set_shell(lang, shell_cmd)
+  utils.notify(string.format("Default shell for '%s' set to '%s'", lang, shell_cmd))
+end
+
+---Reset cached target terminal buffer selections
+---@param lang? string
+function M.reset_target(lang)
+  state.clear_target_buffer(lang)
+  if lang then
+    utils.notify(string.format("Reset target terminal buffer for '%s'", lang))
+  else
+    utils.notify("Reset all target terminal buffers.")
+  end
+end
+
+---Get current target terminal buffer for a language
+---@param lang? string
+---@return integer|nil
+function M.get_target_buffer(lang)
+  return state.get_target_buffer(lang)
+end
+
+---Explicitly set target terminal buffer for a language
+---@param lang string
+---@param bufnr integer
+function M.set_target_buffer(lang, bufnr)
+  state.set_target_buffer(lang, bufnr)
+  utils.notify(string.format("Target terminal for '%s' bound to buffer #%d", lang, bufnr))
 end
 
 return M

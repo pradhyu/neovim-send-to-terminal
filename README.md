@@ -12,6 +12,14 @@ Send commands and code snippets from Markdown documentation, PowerShell scripts,
   - **Inline Code**: Cursor inside `` `cargo test` `` executes just the command without surrounding backticks or prose.
   - **Prompt Stripping**: Automatically strips `$ `, `❯ `, `% `, `PS C:\...>`, `PS /path>`, `>> `, `>>> `, `... `, `In [1]: `, etc.
   - **Interleaved Output Filtering**: Automatically distinguishes between command lines and command output in tutorials/READMEs, executing only the commands.
+- 🧠 **Smart Script & Shell Detection**:
+  - Automatically identifies whether code is PowerShell (`pwsh`), Bash (`sh`/`bash`), or Python.
+  - Automatically routes code to matching open terminal buffers (e.g. PowerShell blocks to `pwsh` terminals, Bash blocks to `bash` terminals).
+- 🎛️ **Multi-Terminal Buffer Selection & Switching**:
+  - If multiple PowerShell or Bash terminal buffers are open, cleanly prompts you (`vim.ui.select`) to pick which terminal to send to.
+  - Remembers your selection per language and lets you re-select or reset at any time (`:SendToTerminal select`, `:SendToTerminal reset`).
+- 🔄 **Dynamic Default Shell Switching**:
+  - Switch the default shell anytime with `:SendToTerminal set_shell <lang> <cmd>` (e.g., `:SendToTerminal set_shell bash zsh` or `:SendToTerminal set_shell powershell pwsh`).
 - ⚡ **Multi-Line Continuation Support**:
   - **POSIX / Python**: Trailing backslash (`\`) line continuations.
   - **PowerShell**: Trailing backtick (``` ` ```) line continuations, trailing pipes (`|`), and operators (`-and`, `-or`, `&&`, `||`).
@@ -43,6 +51,7 @@ Send commands and code snippets from Markdown documentation, PowerShell scripts,
     { "<leader>sb", "<cmd>SendToTerminal block<cr>", desc = "Send current code block" },
     { "<leader>sn", "<cmd>SendToTerminal step<cr>", desc = "Send and step to next" },
     { "<leader>sf", "<cmd>SendToTerminal file<cr>", desc = "Send entire file" },
+    { "<leader>st", "<cmd>SendToTerminal select<cr>", desc = "Select / change target terminal" },
     { "<leader>s", "<cmd>SendToTerminal visual<cr>", mode = "v", desc = "Send visual selection" },
     { "<leader>sm", function() require("send-to-terminal").send_motion() end, desc = "Send motion" },
   },
@@ -54,6 +63,16 @@ Send commands and code snippets from Markdown documentation, PowerShell scripts,
       filter_output_lines = true,
       strip_inline_backticks = true,
       prefer_inline = true,
+    },
+    terminal = {
+      auto_open = true,
+      split = "botright 15split",
+      shells = {
+        powershell = "pwsh", -- or "powershell.exe"
+        bash = "bash",
+        zsh = "zsh",
+        python = "python3",
+      },
     },
   },
 }
@@ -73,6 +92,13 @@ require("send-to-terminal").setup({
     auto_open = true,            -- Automatically open terminal split if none is open
     split = "botright 15split",  -- Command used to open terminal
     focus_on_send = false,       -- Stay in current buffer or switch focus to terminal
+    shells = {
+      powershell = "pwsh",
+      bash = "bash",
+      zsh = "zsh",
+      python = "python3",
+    },
+    default_shell = nil,         -- Default fallback shell
   },
 
   -- Markdown specific settings
