@@ -201,6 +201,16 @@ You can initialize the database with `npm run db:migrate` before starting.
 
 ---
 
+## 📂 Interactive Example Files
+
+Check out the interactive markdown demo files in the [`examples/`](./examples/) folder:
+- [PowerShell Demo (`examples/powershell_demo.md`)](./examples/powershell_demo.md) - Backtick continuations (`` ` ``), pipelines (`|`), here-strings (`@"..."@`), and prompt stripping (`PS C:\>`).
+- [Bash & Zsh Demo (`examples/bash_zsh_demo.md`)](./examples/bash_zsh_demo.md) - Prompt stripping (`$ `, `❯ `), backslash continuations (`\`), heredocs, and output filtering.
+- [Python & IPython REPL Demo (`examples/python_repl_demo.md`)](./examples/python_repl_demo.md) - Prompt stripping (`>>> `, `... `, `In [1]: `) with indentation preservation.
+- [Polyglot Multi-Shell Demo (`examples/polyglot_demo.md`)](./examples/polyglot_demo.md) - Polyglot markdown notebook routing commands to matching terminal backends.
+
+---
+
 ## 🧪 Testing
 
 Run headless unit tests locally:
