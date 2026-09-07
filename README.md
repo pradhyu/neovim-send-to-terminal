@@ -223,3 +223,4 @@ nvim --headless -u NONE -c "luafile tests/run_tests.lua"
 ## 📄 License
 
 MIT License.
+# neovim-send-to-terminal
