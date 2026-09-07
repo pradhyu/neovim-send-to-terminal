@@ -1,5 +1,9 @@
 # 🚀 neovim-send-to-terminal
 
+[![CI](https://github.com/pradhyu/neovim-send-to-terminal/actions/workflows/ci.yml/badge.svg)](https://github.com/pradhyu/neovim-send-to-terminal/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Neovim](https://img.shields.io/badge/Neovim-0.9+-57A143?logo=neovim&logoColor=white)](https://neovim.io)
+
 > The most intuitive, context-aware, and intelligent "Send to Terminal / REPL" plugin for Neovim.
 
 Send commands and code snippets from Markdown documentation, PowerShell scripts, shell files, Python REPLs, and codebuffers directly into your terminal—with **smart prompt stripping**, **interleaved output filtering**, **multi-line continuation awareness (`\`, ``` ` ```, `|`)**, and **bracketed paste support**.
@@ -47,11 +51,11 @@ Send commands and code snippets from Markdown documentation, PowerShell scripts,
 
 ## 📦 Installation
 
-### [lazy.nvim](https://github.com/folke/lazy.nvim)
+### 1. [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
 {
-  "pkshrestha/neovim-send-to-terminal", -- or local path
+  "pradhyu/neovim-send-to-terminal",
   cmd = { "SendToTerminal" },
   keys = {
     { "<leader>tss", "<cmd>SendToTerminal line<cr>", desc = "Send line / inline command" },
@@ -74,6 +78,7 @@ Send commands and code snippets from Markdown documentation, PowerShell scripts,
     history = {
       enabled = true,
       copy_output_to_clipboard = true, -- Automatically copy outcome to clipboard
+      paste_output_to_buffer = true,   -- Automatically paste commented outcome below command in markdown
       notify_on_copy = true,
     },
     markdown = {
@@ -94,6 +99,40 @@ Send commands and code snippets from Markdown documentation, PowerShell scripts,
     },
   },
 }
+```
+
+### 2. [mini.deps](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-deps.md)
+
+```lua
+local MiniDeps = require("mini.deps")
+MiniDeps.add({
+  source = "pradhyu/neovim-send-to-terminal",
+})
+require("send-to-terminal").setup({
+  backend = "auto",
+})
+```
+
+### 3. [packer.nvim](https://github.com/wbthomason/packer.nvim)
+
+```lua
+use({
+  "pradhyu/neovim-send-to-terminal",
+  config = function()
+    require("send-to-terminal").setup({
+      backend = "auto",
+    })
+  end,
+})
+```
+
+### 4. [vim-plug](https://github.com/junegunn/vim-plug)
+
+```vim
+Plug 'pradhyu/neovim-send-to-terminal'
+
+" In your lua config:
+lua require('send-to-terminal').setup()
 ```
 
 ---
