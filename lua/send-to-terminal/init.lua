@@ -1,6 +1,7 @@
 local config = require("send-to-terminal.config")
 local utils = require("send-to-terminal.utils")
 local state = require("send-to-terminal.state")
+local history = require("send-to-terminal.core.history")
 local extractor = require("send-to-terminal.core.extractor")
 local sanitizer = require("send-to-terminal.core.sanitizer")
 local highlighter = require("send-to-terminal.core.highlighter")
@@ -22,12 +23,24 @@ end
 ---@return boolean success
 function M.send_text(text, opts, lang, on_done)
   opts = opts or config.get()
+  lang = lang or "sh"
   local lines = utils.split_lines(text)
   local payload = sanitizer.format_payload(lines, opts)
-  return backends.send(payload, opts, lang, on_done)
+
+  local cur_buf = vim.api.nvim_get_current_buf()
+  local file_path = vim.api.nvim_buf_get_name(cur_buf)
+  local entry = history.add_entry({
+    file = file_path ~= "" and file_path or "[buffer]",
+    line_start = 1,
+    line_end = #lines,
+    lang = lang,
+    command = text,
+  })
+
+  return backends.send(payload, opts, lang, on_done, entry and entry.id or nil)
 end
 
----Execute an extraction result (highlight, format, send)
+---Execute an extraction result (highlight, format, send, record history)
 ---@param result STTExtractionResult|nil
 ---@param opts? STTOptions
 ---@param on_done? fun(success: boolean)
@@ -49,6 +62,17 @@ local function execute_result(result, opts, on_done)
     end
   end
 
+  -- Record execution in history
+  local src_buf = (range and range.bufnr) or vim.api.nvim_get_current_buf()
+  local src_file = vim.api.nvim_buf_get_name(src_buf)
+  local entry = history.add_entry({
+    file = src_file ~= "" and src_file or "[buffer]",
+    line_start = (range and range.start_line) or 1,
+    line_end = (range and range.end_line) or 1,
+    lang = result.lang,
+    command = result.text,
+  })
+
   -- Format payload with bracketed paste & newlines
   local payload = sanitizer.format_payload(result.sanitized_lines, opts)
 
@@ -60,8 +84,8 @@ local function execute_result(result, opts, on_done)
     end
   end
 
-  -- Send via backend with language detection
-  local ok = backends.send(payload, opts, result.lang, done_wrapper)
+  -- Send via backend with language detection and history capture
+  local ok = backends.send(payload, opts, result.lang, done_wrapper, entry and entry.id or nil)
   if ok and not done_called then
     done_wrapper(true)
   end
@@ -241,6 +265,37 @@ end
 function M.set_target_buffer(lang, bufnr)
   state.set_target_buffer(lang, bufnr)
   utils.notify(string.format("Target terminal for '%s' bound to buffer #%d", lang, bufnr))
+end
+
+---Show interactive execution history UI
+function M.show_history()
+  history.show_history_ui()
+end
+
+---Show floating window with the last execution outcome
+function M.show_last_output()
+  history.show_last_output()
+end
+
+---Copy output/outcome of last command to clipboard
+function M.copy_last_output()
+  history.copy_last_output()
+end
+
+---Copy last command to clipboard
+function M.copy_last_command()
+  history.copy_last_command()
+end
+
+---Clear execution history
+function M.clear_history()
+  history.clear()
+end
+
+---Get all history records
+---@return STTHistoryEntry[]
+function M.get_history()
+  return history.entries
 end
 
 return M

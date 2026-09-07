@@ -69,8 +69,9 @@ end
 ---@param opts? STTOptions
 ---@param lang? string
 ---@param on_done? fun(success: boolean)
+---@param entry_id? integer
 ---@return boolean success
-function M.send(text, opts, lang, on_done)
+function M.send(text, opts, lang, on_done, entry_id)
   opts = opts or config.get()
   local backend = M.get_backend(opts.backend)
   if not backend then
@@ -79,7 +80,7 @@ function M.send(text, opts, lang, on_done)
     return false
   end
 
-  local res = backend.send(text, opts, lang, on_done)
+  local res = backend.send(text, opts, lang, on_done, entry_id)
   return res ~= false
 end
 

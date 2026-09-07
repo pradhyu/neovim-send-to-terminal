@@ -12,6 +12,13 @@ Send commands and code snippets from Markdown documentation, PowerShell scripts,
   - **Inline Code**: Cursor inside `` `cargo test` `` executes just the command without surrounding backticks or prose.
   - **Prompt Stripping**: Automatically strips `$ `, `❯ `, `% `, `PS C:\...>`, `PS /path>`, `>> `, `>>> `, `... `, `In [1]: `, etc.
   - **Interleaved Output Filtering**: Automatically distinguishes between command lines and command output in tutorials/READMEs, executing only the commands.
+- 📋 **Automatic Outcome Recording & Execution History**:
+  - Automatically captures the terminal output / outcome of executed commands.
+  - Keeps full metadata: exact markdown / file path, line numbers, timestamp, language, command text, and output.
+  - **Auto-copy to Clipboard**: Automatically copies the clean terminal outcome (with ANSI color codes stripped) to your system clipboard (`"+"`).
+- 🔍 **Interactive History Viewer & Float Modal**:
+  - `:SendToTerminal history` (`<leader>sh`): Browse past execution logs.
+  - `:SendToTerminal last` (`<leader>sl`): Instantly popup a float modal showing the last command and its terminal outcome (press `y` to copy output, `c` to copy command, `q` to close).
 - 🧠 **Smart Script & Shell Detection**:
   - Automatically identifies whether code is PowerShell (`pwsh`), Bash (`sh`/`bash`), or Python.
   - Automatically routes code to matching open terminal buffers (e.g. PowerShell blocks to `pwsh` terminals, Bash blocks to `bash` terminals).
@@ -52,12 +59,20 @@ Send commands and code snippets from Markdown documentation, PowerShell scripts,
     { "<leader>sn", "<cmd>SendToTerminal step<cr>", desc = "Send and step to next" },
     { "<leader>sf", "<cmd>SendToTerminal file<cr>", desc = "Send entire file" },
     { "<leader>st", "<cmd>SendToTerminal select<cr>", desc = "Select / change target terminal" },
+    { "<leader>sh", "<cmd>SendToTerminal history<cr>", desc = "Show execution history" },
+    { "<leader>sl", "<cmd>SendToTerminal last<cr>", desc = "Show last outcome float" },
+    { "<leader>so", "<cmd>SendToTerminal copy_output<cr>", desc = "Copy last outcome to clipboard" },
     { "<leader>s", "<cmd>SendToTerminal visual<cr>", mode = "v", desc = "Send visual selection" },
     { "<leader>sm", function() require("send-to-terminal").send_motion() end, desc = "Send motion" },
   },
   opts = {
     backend = "auto", -- "auto" | "neovim" | "snacks" | "toggleterm" | "tmux" | "zellij" | "kitty" | "wezterm"
     bracketed_paste = true,
+    history = {
+      enabled = true,
+      copy_output_to_clipboard = true, -- Automatically copy outcome to clipboard
+      notify_on_copy = true,
+    },
     markdown = {
       strip_prompts = true,
       filter_output_lines = true,
@@ -86,6 +101,16 @@ Send commands and code snippets from Markdown documentation, PowerShell scripts,
 require("send-to-terminal").setup({
   -- Backend selection: "auto", "neovim", "snacks", "toggleterm", "tmux", "zellij", "kitty", "wezterm"
   backend = "auto",
+
+  -- Execution history & outcome recording
+  history = {
+    enabled = true,
+    max_entries = 100,
+    copy_output_to_clipboard = true, -- Auto-copy terminal output to system clipboard (+)
+    capture_output = true,          -- Capture output from terminal buffer
+    capture_timeout = 1000,         -- Milliseconds to wait for output
+    notify_on_copy = true,
+  },
 
   -- Native Neovim terminal settings
   terminal = {

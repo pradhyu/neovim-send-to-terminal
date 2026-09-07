@@ -231,7 +231,8 @@ end
 ---@param opts? STTOptions
 ---@param lang? string
 ---@param on_done? fun(success: boolean)
-function M.send(text, opts, lang, on_done)
+---@param entry_id? integer
+function M.send(text, opts, lang, on_done, entry_id)
   opts = opts or config.get()
   lang = lang or "sh"
 
@@ -241,8 +242,19 @@ function M.send(text, opts, lang, on_done)
       return
     end
 
+    local start_line_count = 1
+    if buf and vim.api.nvim_buf_is_valid(buf) then
+      start_line_count = vim.api.nvim_buf_line_count(buf)
+    end
+
     -- Send via chansend
     vim.fn.chansend(job_id, text)
+
+    -- Capture output for history & clipboard
+    if entry_id and buf and vim.api.nvim_buf_is_valid(buf) then
+      local history = require("send-to-terminal.core.history")
+      history.capture_terminal_output(buf, start_line_count, entry_id, opts)
+    end
 
     if opts.terminal and opts.terminal.focus_on_send and win and vim.api.nvim_win_is_valid(win) then
       vim.api.nvim_set_current_win(win)

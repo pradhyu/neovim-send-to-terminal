@@ -29,6 +29,14 @@ local M = {}
 ---@field duration? integer Duration of flash in milliseconds
 ---@field hl_group? string Highlight group to use for flash (e.g. "IncSearch" or "Visual")
 
+---@class STTHistoryOptions
+---@field enabled? boolean Enable execution history tracking
+---@field max_entries? integer Maximum history entries to keep in memory
+---@field copy_output_to_clipboard? boolean Automatically copy execution outcome/output to clipboard
+---@field capture_output? boolean Capture output from terminal buffer
+---@field capture_timeout? integer Milliseconds to wait/debounce for terminal output
+---@field notify_on_copy? boolean Show notification when outcome is copied to clipboard
+
 ---@type STTOptions
 M.defaults = {
   backend = "auto",
@@ -65,6 +73,15 @@ M.defaults = {
     enabled = true,
     duration = 150,
     hl_group = "IncSearch",
+  },
+
+  history = {
+    enabled = true,
+    max_entries = 100,
+    copy_output_to_clipboard = true,
+    capture_output = true,
+    capture_timeout = 1000,
+    notify_on_copy = true,
   },
 
   -- Regex patterns for prompts per filetype/syntax

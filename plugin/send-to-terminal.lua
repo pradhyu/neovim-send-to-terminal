@@ -23,6 +23,12 @@ local subcommands = {
     end
     stt.set_default_shell(args[2], args[3])
   end,
+  history = function(args) stt.show_history() end,
+  last = function(args) stt.show_last_output() end,
+  show_last = function(args) stt.show_last_output() end,
+  copy_output = function(args) stt.copy_last_output() end,
+  copy_command = function(args) stt.copy_last_command() end,
+  clear_history = function(args) stt.clear_history() end,
 }
 
 vim.api.nvim_create_user_command("SendToTerminal", function(opts)
@@ -39,7 +45,11 @@ end, {
   complete = function(arg_lead, cmd_line, cursor_pos)
     local parts = vim.split(cmd_line, "%s+")
     if #parts <= 2 then
-      local items = { "line", "block", "visual", "step", "file", "motion", "select", "set_shell", "reset" }
+      local items = {
+        "line", "block", "visual", "step", "file", "motion",
+        "select", "set_shell", "reset",
+        "history", "last", "show_last", "copy_output", "copy_command", "clear_history",
+      }
       local matches = {}
       for _, item in ipairs(items) do
         if item:find("^" .. arg_lead) then
@@ -59,5 +69,5 @@ end, {
     end
     return {}
   end,
-  desc = "Send code snippets or manage terminal targets",
+  desc = "Send code snippets, manage terminal targets, or inspect execution history",
 })

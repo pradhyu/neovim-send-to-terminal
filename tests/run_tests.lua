@@ -9,6 +9,7 @@ require("tests.sanitizer_spec")
 require("tests.markdown_spec")
 require("tests.stepper_and_backend_spec")
 require("tests.shell_detection_and_selection_spec")
+require("tests.history_spec")
 
 print("\n==========================================")
 print(string.format("Test Summary: %d passed, %d failed", T.passed, T.failed))
