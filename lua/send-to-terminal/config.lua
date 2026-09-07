@@ -33,6 +33,8 @@ local M = {}
 ---@field enabled? boolean Enable execution history tracking
 ---@field max_entries? integer Maximum history entries to keep in memory
 ---@field copy_output_to_clipboard? boolean Automatically copy execution outcome/output to clipboard
+---@field paste_output_to_buffer? boolean Automatically paste commented output below the command in markdown
+---@field comment_prefix? string Custom comment prefix (nil for auto: "# ", "-- ", "// ")
 ---@field capture_output? boolean Capture output from terminal buffer
 ---@field capture_timeout? integer Milliseconds to wait/debounce for terminal output
 ---@field notify_on_copy? boolean Show notification when outcome is copied to clipboard
@@ -79,6 +81,8 @@ M.defaults = {
     enabled = true,
     max_entries = 100,
     copy_output_to_clipboard = true,
+    paste_output_to_buffer = true,
+    comment_prefix = nil,
     capture_output = true,
     capture_timeout = 1000,
     notify_on_copy = true,

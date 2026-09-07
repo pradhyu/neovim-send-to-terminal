@@ -6,6 +6,7 @@ local M = {}
 ---@class STTHistoryEntry
 ---@field id integer
 ---@field timestamp string
+---@field src_bufnr integer|nil
 ---@field file string
 ---@field line_start integer
 ---@field line_end integer
@@ -39,6 +40,95 @@ function M.strip_ansi(text)
   return cleaned
 end
 
+---Determine the appropriate comment prefix for a language
+---@param lang string
+---@param opts? STTOptions
+---@return string
+function M.get_comment_prefix(lang, opts)
+  opts = opts or config.get()
+  local hist_opts = opts.history or {}
+  if hist_opts.comment_prefix then
+    return hist_opts.comment_prefix
+  end
+
+  local norm = utils.normalize_lang(lang)
+  if norm == "powershell" or norm == "pwsh" or norm == "ps1" or norm == "bash"
+     or norm == "sh" or norm == "zsh" or norm == "fish" or norm == "python"
+     or norm == "r" or norm == "ruby" or norm == "julia" then
+    return "# "
+  elseif norm == "lua" or norm == "sql" then
+    return "-- "
+  elseif norm == "javascript" or norm == "typescript" or norm == "c" or norm == "cpp"
+     or norm == "rust" or norm == "go" or norm == "java" then
+    return "// "
+  end
+
+  return "# "
+end
+
+---Format output lines with language-specific comment characters
+---@param output string
+---@param lang string
+---@param command? string
+---@param opts? STTOptions
+---@return string[]
+function M.format_commented_output(output, lang, command, opts)
+  local prefix = M.get_comment_prefix(lang, opts)
+  local raw_lines = utils.split_lines(output)
+  local commented = {}
+
+  -- Check if first line echoes the command itself (common in terminal streams)
+  local start_idx = 1
+  if #raw_lines > 0 and command and command ~= "" then
+    local first_line = utils.trim(raw_lines[1])
+    local first_cmd_line = utils.trim(utils.split_lines(command)[1] or "")
+    if first_line == first_cmd_line or first_line:match(vim.pesc(first_cmd_line) .. "$") then
+      start_idx = 2
+    end
+  end
+
+  for i = start_idx, #raw_lines do
+    local l = raw_lines[i]
+    if utils.is_blank(l) then
+      table.insert(commented, utils.rtrim(prefix))
+    else
+      table.insert(commented, prefix .. l)
+    end
+  end
+
+  return commented
+end
+
+---Paste commented output lines directly below the executed command in buffer
+---@param bufnr integer
+---@param line_end integer (1-indexed line after which to insert)
+---@param output string
+---@param lang string
+---@param command? string
+---@param opts? STTOptions
+---@return boolean success
+function M.paste_commented_output_to_buffer(bufnr, line_end, output, lang, command, opts)
+  if not bufnr or not vim.api.nvim_buf_is_valid(bufnr) or not vim.bo[bufnr].modifiable then
+    return false
+  end
+
+  local commented_lines = M.format_commented_output(output, lang, command, opts)
+  if #commented_lines == 0 then
+    return false
+  end
+
+  local total_lines = vim.api.nvim_buf_line_count(bufnr)
+  local insert_idx = math.min(line_end, total_lines)
+
+  vim.api.nvim_buf_set_lines(bufnr, insert_idx, insert_idx, false, commented_lines)
+
+  -- Flash highlight the newly inserted output lines
+  local highlighter = require("send-to-terminal.core.highlighter")
+  highlighter.flash_lines(bufnr, insert_idx + 1, insert_idx + #commented_lines, opts)
+
+  return true
+end
+
 ---Add a new history entry
 ---@param data table
 ---@return STTHistoryEntry
@@ -52,6 +142,7 @@ function M.add_entry(data)
   local entry = {
     id = next_id,
     timestamp = os.date("%Y-%m-%d %H:%M:%S"),
+    src_bufnr = data.src_bufnr,
     file = data.file or "[buffer]",
     line_start = data.line_start or 1,
     line_end = data.line_end or 1,
@@ -73,7 +164,7 @@ function M.add_entry(data)
   return entry
 end
 
----Update output for a history entry
+---Update output for a history entry and optionally paste/copy
 ---@param entry_id integer
 ---@param raw_output string
 ---@param opts? STTOptions
@@ -87,8 +178,16 @@ function M.update_output(entry_id, raw_output, opts)
       entry.output = utils.trim(cleaned)
       entry.status = "completed"
 
-      if hist_opts.copy_output_to_clipboard and entry.output ~= "" then
-        M.copy_to_clipboard(entry.output, hist_opts.notify_on_copy)
+      if entry.output ~= "" then
+        -- Auto-copy to clipboard if enabled
+        if hist_opts.copy_output_to_clipboard then
+          M.copy_to_clipboard(entry.output, hist_opts.notify_on_copy)
+        end
+
+        -- Auto-paste commented output below command in buffer if enabled
+        if hist_opts.paste_output_to_buffer and entry.src_bufnr then
+          M.paste_commented_output_to_buffer(entry.src_bufnr, entry.line_end, entry.output, entry.lang, entry.command, opts)
+        end
       end
       break
     end
@@ -165,6 +264,23 @@ function M.copy_last_command()
   M.copy_to_clipboard(entry.command, true)
 end
 
+---Paste the last command's outcome as commented lines below current line
+---@param opts? STTOptions
+function M.paste_last_output_to_current_buffer(opts)
+  local entry = M.get_last_entry()
+  if not entry or entry.output == "" then
+    utils.notify("No output available to paste.", vim.log.levels.WARN)
+    return
+  end
+
+  local bufnr = vim.api.nvim_get_current_buf()
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local cur_line = cursor[1]
+
+  M.paste_commented_output_to_buffer(bufnr, cur_line, entry.output, entry.lang, entry.command, opts)
+  utils.notify("Pasted commented output below cursor.")
+end
+
 ---Open a floating window to inspect full details of a history entry
 ---@param entry STTHistoryEntry
 function M.show_entry_float(entry)
@@ -201,7 +317,7 @@ function M.show_entry_float(entry)
   end
   table.insert(lines, "```")
   table.insert(lines, "")
-  table.insert(lines, "──────── (Press 'y' to copy output, 'c' to copy command, 'q' to close) ────────")
+  table.insert(lines, "──────── (Press 'y' to copy output, 'c' to copy command, 'p' to paste below, 'q' to close) ────────")
 
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   vim.bo[buf].modifiable = false
@@ -236,6 +352,12 @@ function M.show_entry_float(entry)
   end)
   set_key("c", function()
     M.copy_to_clipboard(entry.command, true)
+  end)
+  set_key("p", function()
+    pcall(vim.api.nvim_win_close, win, true)
+    local cur_buf = vim.api.nvim_get_current_buf()
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    M.paste_commented_output_to_buffer(cur_buf, cursor[1], entry.output, entry.lang, entry.command)
   end)
 end
 

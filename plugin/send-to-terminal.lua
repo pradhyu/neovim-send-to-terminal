@@ -28,6 +28,7 @@ local subcommands = {
   show_last = function(args) stt.show_last_output() end,
   copy_output = function(args) stt.copy_last_output() end,
   copy_command = function(args) stt.copy_last_command() end,
+  paste_output = function(args) stt.paste_last_output() end,
   clear_history = function(args) stt.clear_history() end,
 }
 
@@ -48,7 +49,7 @@ end, {
       local items = {
         "line", "block", "visual", "step", "file", "motion",
         "select", "set_shell", "reset",
-        "history", "last", "show_last", "copy_output", "copy_command", "clear_history",
+        "history", "last", "show_last", "copy_output", "copy_command", "paste_output", "clear_history",
       }
       local matches = {}
       for _, item in ipairs(items) do

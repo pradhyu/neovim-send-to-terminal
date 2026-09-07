@@ -12,6 +12,63 @@ T.run_test("Strip ANSI Escape Sequences & Carriage Returns", function()
   T.assert_eq(cleaned, "[SUCCESS] Process completed.\n", "Should strip ANSI color codes and carriage returns")
 end)
 
+T.run_test("Format Commented Output with Language Prefixes", function()
+  -- PowerShell output formatting
+  local ps_output = "Handles  NPM(K)  ProcessName\n-------  ------  -----------\n    658      41  pwsh"
+  local ps_commented = history.format_commented_output(ps_output, "powershell")
+  T.assert_eq(ps_commented, {
+    "# Handles  NPM(K)  ProcessName",
+    "# -------  ------  -----------",
+    "#     658      41  pwsh",
+  }, "Should prefix powershell output lines with # ")
+
+  -- Lua output formatting
+  local lua_output = "result = 42\ntrue"
+  local lua_commented = history.format_commented_output(lua_output, "lua")
+  T.assert_eq(lua_commented, {
+    "-- result = 42",
+    "-- true",
+  }, "Should prefix lua output lines with -- ")
+
+  -- Strip command echo from terminal stream if present
+  local echoed_output = "Get-Process pwsh\nHandles  ProcessName\n    658  pwsh"
+  local stripped_echo = history.format_commented_output(echoed_output, "powershell", "Get-Process pwsh")
+  T.assert_eq(stripped_echo, {
+    "# Handles  ProcessName",
+    "#     658  pwsh",
+  }, "Should strip command echo from first line of output")
+end)
+
+T.run_test("Paste Commented Output into Buffer Below Command", function()
+  local bufnr = vim.api.nvim_create_buf(false, true)
+  vim.bo[bufnr].filetype = "markdown"
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {
+    "```powershell",
+    "PS C:\\> Get-Service sshd",
+    "```",
+    "",
+    "Next section...",
+  })
+
+  local output = "Status   Name               DisplayName\n------   ----               -----------\nRunning  sshd               OpenSSH SSH Server"
+  local ok = history.paste_commented_output_to_buffer(bufnr, 2, output, "powershell", "Get-Service sshd")
+  T.assert_true(ok, "Should succeed pasting output to buffer")
+
+  local new_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  T.assert_eq(new_lines, {
+    "```powershell",
+    "PS C:\\> Get-Service sshd",
+    "# Status   Name               DisplayName",
+    "# ------   ----               -----------",
+    "# Running  sshd               OpenSSH SSH Server",
+    "```",
+    "",
+    "Next section...",
+  }, "Should insert commented output lines right below the command inside markdown code block")
+
+  vim.api.nvim_buf_delete(bufnr, { force = true })
+end)
+
 T.run_test("History Entry Creation & Metadata Recording", function()
   history.clear()
   local entry = history.add_entry({

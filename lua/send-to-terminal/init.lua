@@ -29,10 +29,12 @@ function M.send_text(text, opts, lang, on_done)
 
   local cur_buf = vim.api.nvim_get_current_buf()
   local file_path = vim.api.nvim_buf_get_name(cur_buf)
+  local cursor = vim.api.nvim_win_get_cursor(0)
   local entry = history.add_entry({
+    src_bufnr = cur_buf,
     file = file_path ~= "" and file_path or "[buffer]",
-    line_start = 1,
-    line_end = #lines,
+    line_start = cursor[1],
+    line_end = cursor[1],
     lang = lang,
     command = text,
   })
@@ -66,6 +68,7 @@ local function execute_result(result, opts, on_done)
   local src_buf = (range and range.bufnr) or vim.api.nvim_get_current_buf()
   local src_file = vim.api.nvim_buf_get_name(src_buf)
   local entry = history.add_entry({
+    src_bufnr = src_buf,
     file = src_file ~= "" and src_file or "[buffer]",
     line_start = (range and range.start_line) or 1,
     line_end = (range and range.end_line) or 1,
@@ -285,6 +288,12 @@ end
 ---Copy last command to clipboard
 function M.copy_last_command()
   history.copy_last_command()
+end
+
+---Paste the last command's outcome as commented lines below cursor
+---@param opts? STTOptions
+function M.paste_last_output(opts)
+  history.paste_last_output_to_current_buffer(opts)
 end
 
 ---Clear execution history
