@@ -12,7 +12,43 @@ local M = {}
 ---Initialize plugin with user options
 ---@param opts? STTOptions
 function M.setup(opts)
-  config.setup(opts)
+  local cfg = config.setup(opts)
+  if cfg.keymaps then
+    local km = cfg.keymaps
+    if km.send_line then
+      vim.keymap.set("n", km.send_line, function() M.send_line() end, { desc = "Send line / inline command" })
+    end
+    if km.send_block then
+      vim.keymap.set("n", km.send_block, function() M.send_block() end, { desc = "Send current code block" })
+    end
+    if km.send_step then
+      vim.keymap.set("n", km.send_step, function() M.send_step() end, { desc = "Send and step to next" })
+    end
+    if km.send_file then
+      vim.keymap.set("n", km.send_file, function() M.send_file() end, { desc = "Send entire file" })
+    end
+    if km.send_visual then
+      vim.keymap.set("v", km.send_visual, function() M.send_visual() end, { desc = "Send visual selection" })
+    end
+    if km.send_motion then
+      vim.keymap.set("n", km.send_motion, function() M.send_motion() end, { desc = "Send motion" })
+    end
+    if km.select_terminal then
+      vim.keymap.set("n", km.select_terminal, function() M.select_terminal() end, { desc = "Select target terminal" })
+    end
+    if km.show_last then
+      vim.keymap.set("n", km.show_last, function() M.show_last_output() end, { desc = "Show last outcome float" })
+    end
+    if km.show_history then
+      vim.keymap.set("n", km.show_history, function() M.show_history() end, { desc = "Show execution history" })
+    end
+    if km.copy_output then
+      vim.keymap.set("n", km.copy_output, function() M.copy_last_output() end, { desc = "Copy last outcome to clipboard" })
+    end
+    if km.paste_output then
+      vim.keymap.set("n", km.paste_output, function() M.paste_last_output() end, { desc = "Paste last output into buffer" })
+    end
+  end
 end
 
 ---Send arbitrary text string to terminal backend

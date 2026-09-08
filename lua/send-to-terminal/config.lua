@@ -115,6 +115,21 @@ M.defaults = {
     powershell = { "`", "\\" },
     pwsh = { "`", "\\" },
   },
+
+  -- Default keybindings (prefix <leader>ts...)
+  keymaps = {
+    send_line = "<leader>tss",
+    send_block = "<leader>tsb",
+    send_step = "<leader>tsn",
+    send_file = "<leader>tsf",
+    send_visual = "<leader>ts",
+    send_motion = "<leader>tsm",
+    select_terminal = "<leader>tst",
+    show_last = "<leader>tsl",
+    show_history = "<leader>tsh",
+    copy_output = "<leader>tso",
+    paste_output = "<leader>tsp",
+  },
 }
 
 ---@type STTOptions
