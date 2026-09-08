@@ -81,7 +81,7 @@ M.defaults = {
     enabled = true,
     max_entries = 100,
     copy_output_to_clipboard = true,
-    paste_output_to_buffer = true,
+    paste_output_to_buffer = false, -- Disabled by default, toggleable anytime
     comment_prefix = nil,
     capture_output = true,
     capture_timeout = 1000,
@@ -129,6 +129,8 @@ M.defaults = {
     show_history = "<leader>tsh",
     copy_output = "<leader>tso",
     paste_output = "<leader>tsp",
+    toggle_paste = "<leader>tsu",  -- Toggle auto-pasting commented outcome into buffer
+    toggle_copy = "<leader>tsy",   -- Toggle auto-copying outcome to clipboard
   },
 }
 

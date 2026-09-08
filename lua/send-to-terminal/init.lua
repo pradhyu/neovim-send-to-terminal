@@ -48,6 +48,12 @@ function M.setup(opts)
     if km.paste_output then
       vim.keymap.set("n", km.paste_output, function() M.paste_last_output() end, { desc = "Paste last output into buffer" })
     end
+    if km.toggle_paste then
+      vim.keymap.set("n", km.toggle_paste, function() M.toggle_paste_output() end, { desc = "Toggle auto-paste output to buffer" })
+    end
+    if km.toggle_copy then
+      vim.keymap.set("n", km.toggle_copy, function() M.toggle_copy_output() end, { desc = "Toggle auto-copy outcome to clipboard" })
+    end
   end
 end
 
