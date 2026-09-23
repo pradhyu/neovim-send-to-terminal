@@ -393,4 +393,11 @@ function M.get_history()
   return history.entries
 end
 
+---Clear cached modules and hot-reload send-to-terminal
+---@param verbose? boolean
+---@return integer count
+function M.reload(verbose)
+  return require("send-to-terminal.dev").reload(verbose)
+end
+
 return M

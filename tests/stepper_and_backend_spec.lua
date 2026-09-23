@@ -74,3 +74,11 @@ T.run_test("Step-through Cursor Advancement (PowerShell multi-line `)", function
 
   vim.api.nvim_buf_delete(bufnr, { force = true })
 end)
+
+T.run_test("Hot-Reload Module Lifecycle", function()
+  local reloaded_count = stt.reload(false)
+  T.assert_true(reloaded_count > 0, "Reload should unload and reload multiple modules")
+  T.assert_not_nil(package.loaded["send-to-terminal"], "send-to-terminal should be reloaded")
+  T.assert_not_nil(package.loaded["send-to-terminal.config"], "send-to-terminal.config should be reloaded")
+end)
+

@@ -33,6 +33,7 @@ local subcommands = {
   toggle_paste_output = function(args) stt.toggle_paste_output() end,
   toggle_history = function(args) stt.toggle_history() end,
   toggle_copy = function(args) stt.toggle_copy_output() end,
+  reload = function(args) stt.reload(true) end,
   status = function(args) stt.status() end,
   clear_history = function(args) stt.clear_history() end,
 }
@@ -55,7 +56,7 @@ end, {
         "line", "block", "visual", "step", "file", "motion",
         "select", "set_shell", "reset",
         "history", "last", "show_last", "copy_output", "copy_command", "paste_output",
-        "toggle_paste", "toggle_history", "toggle_copy", "status", "clear_history",
+        "toggle_paste", "toggle_history", "toggle_copy", "reload", "status", "clear_history",
       }
       local matches = {}
       for _, item in ipairs(items) do

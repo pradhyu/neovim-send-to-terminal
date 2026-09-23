@@ -21,8 +21,10 @@ Send commands and code snippets from Markdown documentation, PowerShell scripts,
   - Keeps full metadata: exact markdown / file path, line numbers, timestamp, language, command text, and output.
   - **Auto-copy to Clipboard**: Automatically copies the clean terminal outcome (with ANSI color codes stripped) to your system clipboard (`"+"`).
 - 🔍 **Interactive History Viewer & Float Modal**:
-  - `:SendToTerminal history` (`<leader>sh`): Browse past execution logs.
-  - `:SendToTerminal last` (`<leader>sl`): Instantly popup a float modal showing the last command and its terminal outcome (press `y` to copy output, `c` to copy command, `q` to close).
+  - `:SendToTerminal history` (`<leader>th`): Browse past execution logs.
+  - `:SendToTerminal last` (`<leader>tl`): Instantly popup a float modal showing the last command and its terminal outcome (press `y` to copy output, `c` to copy command, `q` to close).
+- 🔄 **Live Hot-Reloading**:
+  - `:SendToTerminal reload` (`<leader>tR`): Instantly hot-reload all plugin modules during development and testing without restarting Neovim.
 - 🧠 **Smart Script & Shell Detection**:
   - Automatically identifies whether code is PowerShell (`pwsh`), Bash (`sh`/`bash`), or Python.
   - Automatically routes code to matching open terminal buffers (e.g. PowerShell blocks to `pwsh` terminals, Bash blocks to `bash` terminals).
@@ -58,19 +60,21 @@ Send commands and code snippets from Markdown documentation, PowerShell scripts,
   "pradhyu/neovim-send-to-terminal",
   cmd = { "SendToTerminal" },
   keys = {
-    { "<leader>tss", "<cmd>SendToTerminal line<cr>", desc = "Send line / inline command" },
-    { "<leader>tsb", "<cmd>SendToTerminal block<cr>", desc = "Send current code block" },
-    { "<leader>tsn", "<cmd>SendToTerminal step<cr>", desc = "Send and step to next" },
-    { "<leader>tsf", "<cmd>SendToTerminal file<cr>", desc = "Send entire file" },
-    { "<leader>tst", "<cmd>SendToTerminal select<cr>", desc = "Select / change target terminal" },
-    { "<leader>tsh", "<cmd>SendToTerminal history<cr>", desc = "Show execution history" },
-    { "<leader>tsl", "<cmd>SendToTerminal last<cr>", desc = "Show last outcome float" },
-    { "<leader>tso", "<cmd>SendToTerminal copy_output<cr>", desc = "Copy last outcome to clipboard" },
-    { "<leader>tsp", "<cmd>SendToTerminal paste_output<cr>", desc = "Paste outcome into buffer" },
-    { "<leader>tsu", "<cmd>SendToTerminal toggle_paste<cr>", desc = "Toggle auto-paste outcome to buffer" },
-    { "<leader>tsy", "<cmd>SendToTerminal toggle_copy<cr>", desc = "Toggle auto-copy outcome to clipboard" },
-    { "<leader>ts", "<cmd>SendToTerminal visual<cr>", mode = "v", desc = "Send visual selection" },
-    { "<leader>tsm", function() require("send-to-terminal").send_motion() end, desc = "Send motion" },
+    { "<leader>tt", "<cmd>SendToTerminal line<cr>", desc = "Send line / inline command" },
+    { "<leader>tb", "<cmd>SendToTerminal block<cr>", desc = "Send current code block" },
+    { "<leader>tn", "<cmd>SendToTerminal step<cr>", desc = "Send and step to next" },
+    { "<leader>tf", "<cmd>SendToTerminal file<cr>", desc = "Send entire file" },
+    { "<leader>ts", "<cmd>SendToTerminal select<cr>", desc = "Select / switch target terminal" },
+    { "<leader>th", "<cmd>SendToTerminal history<cr>", desc = "Show execution history" },
+    { "<leader>tl", "<cmd>SendToTerminal last<cr>", desc = "Show last outcome float" },
+    { "<leader>to", "<cmd>SendToTerminal copy_output<cr>", desc = "Copy last outcome to clipboard" },
+    { "<leader>tp", "<cmd>SendToTerminal paste_output<cr>", desc = "Paste commented outcome below cursor" },
+    { "<leader>tR", "<cmd>SendToTerminal reload<cr>", desc = "Hot-reload send-to-terminal" },
+    { "<leader>tP", "<cmd>SendToTerminal toggle_paste<cr>", desc = "Toggle auto-paste output" },
+    { "<leader>tH", "<cmd>SendToTerminal toggle_history<cr>", desc = "Toggle history tracking" },
+    { "<leader>tC", "<cmd>SendToTerminal toggle_copy<cr>", desc = "Toggle auto-copy to clipboard" },
+    { "<leader>t", "<cmd>SendToTerminal visual<cr>", mode = "v", desc = "Send visual selection" },
+    { "<leader>tm", function() require("send-to-terminal").send_motion() end, desc = "Send motion" },
   },
   opts = {
     backend = "auto", -- "auto" | "neovim" | "snacks" | "toggleterm" | "tmux" | "zellij" | "kitty" | "wezterm"
@@ -78,7 +82,6 @@ Send commands and code snippets from Markdown documentation, PowerShell scripts,
     history = {
       enabled = true,
       copy_output_to_clipboard = true, -- Automatically copy outcome to clipboard
-      paste_output_to_buffer = true,   -- Automatically paste commented outcome below command in markdown
       notify_on_copy = true,
     },
     markdown = {
@@ -224,7 +227,7 @@ PS C:\> Get-ChildItem `
     -Filter *.ps1 `
     -Recurse
 ```
-- **Executing current line / step (`<leader>ss` or `<leader>sn`)**: Automatically detects the trailing backtick (`` ` ``) and sends all 4 lines together as one command, cleanly stripping `PS C:\>`.
+- **Executing current line / step (`<leader>tt` or `<leader>tn`)**: Automatically detects the trailing backtick (`` ` ``) and sends all 4 lines together as one command, cleanly stripping `PS C:\>`.
 
 ### 2. Documentation with Interleaved Output
 ```bash
@@ -233,13 +236,13 @@ On branch main
 nothing to commit, working tree clean
 $ git pull
 ```
-- **Executing block (`<leader>sb`)**: Detects `$ ` prompts and automatically filters out the output text `On branch main...`, running only `git status` and `git pull`!
+- **Executing block (`<leader>tb`)**: Detects `$ ` prompts and automatically filters out the output text `On branch main...`, running only `git status` and `git pull`!
 
 ### 3. Inline Backticks in Markdown Prose
 ```markdown
 You can initialize the database with `npm run db:migrate` before starting.
 ```
-- Placing your cursor on `npm run db:migrate` and running `<leader>ss` sends only `npm run db:migrate` without the backticks.
+- Placing your cursor on `npm run db:migrate` and running `<leader>tt` sends only `npm run db:migrate` without the backticks.
 
 ---
 

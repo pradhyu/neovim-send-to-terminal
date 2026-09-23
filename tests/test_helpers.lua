@@ -25,6 +25,10 @@ function M.assert_false(val, message)
   M.assert_eq(val, false, message)
 end
 
+function M.assert_not_nil(val, message)
+  M.assert_true(val ~= nil, message or "Expected value to not be nil")
+end
+
 function M.run_test(name, fn)
   local ok, err = pcall(fn)
   if ok then

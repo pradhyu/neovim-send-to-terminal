@@ -92,7 +92,7 @@ When invoked inside programming language files or REPLs (`powershell`/`pwsh`, `p
 3. **Treesitter Statement / Function Target**:
    - Send current Treesitter node (e.g. statement, function definition, scriptblock, pipeline).
 4. **Visual Selection & Operator**:
-   - Works as standard Vim operator (`<leader>s{motion}`) and in visual mode (`v` / `V`).
+   - Works as standard Vim operator (`<leader>t{motion}`) and in visual mode (`v` / `V`).
 
 ---
 
@@ -141,13 +141,19 @@ Supported Out-of-the-Box Backends:
 ### 4.1 Default Keymap Suggestions
 ```lua
 -- Normal mode
-vim.keymap.set("n", "<leader>ss", "<cmd>SendToTerminal line<cr>", { desc = "Send current line / inline code" })
-vim.keymap.set("n", "<leader>sb", "<cmd>SendToTerminal block<cr>", { desc = "Send current block (markdown / treesitter)" })
-vim.keymap.set("n", "<leader>sn", "<cmd>SendToTerminal step<cr>", { desc = "Send and step to next" })
-vim.keymap.set("n", "<leader>sf", "<cmd>SendToTerminal file<cr>", { desc = "Send entire file" })
+vim.keymap.set("n", "<leader>tt", "<cmd>SendToTerminal line<cr>", { desc = "Send current line / inline code" })
+vim.keymap.set("n", "<leader>tb", "<cmd>SendToTerminal block<cr>", { desc = "Send current block (markdown / treesitter)" })
+vim.keymap.set("n", "<leader>tn", "<cmd>SendToTerminal step<cr>", { desc = "Send and step to next" })
+vim.keymap.set("n", "<leader>tf", "<cmd>SendToTerminal file<cr>", { desc = "Send entire file" })
+vim.keymap.set("n", "<leader>ts", "<cmd>SendToTerminal select<cr>", { desc = "Select / switch target terminal" })
+vim.keymap.set("n", "<leader>th", "<cmd>SendToTerminal history<cr>", { desc = "Show execution history" })
+vim.keymap.set("n", "<leader>tl", "<cmd>SendToTerminal last<cr>", { desc = "Show last outcome popup" })
+vim.keymap.set("n", "<leader>to", "<cmd>SendToTerminal copy_output<cr>", { desc = "Copy last outcome to clipboard" })
+vim.keymap.set("n", "<leader>tp", "<cmd>SendToTerminal paste_output<cr>", { desc = "Paste commented outcome below cursor" })
+vim.keymap.set("n", "<leader>tR", "<cmd>SendToTerminal reload<cr>", { desc = "Hot-reload send-to-terminal" })
 
 -- Visual mode
-vim.keymap.set("v", "<leader>s", "<cmd>SendToTerminal visual<cr>", { desc = "Send visual selection" })
+vim.keymap.set("v", "<leader>t", "<cmd>SendToTerminal visual<cr>", { desc = "Send visual selection" })
 ```
 
 ### 4.2 Configuration Options Schema
