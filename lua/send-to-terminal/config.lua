@@ -116,21 +116,21 @@ M.defaults = {
     pwsh = { "`", "\\" },
   },
 
-  -- Default keybindings (prefix <leader>ts...)
+  -- Default keybindings (prefix <leader>r...)
   keymaps = {
-    send_line = "<leader>tss",
-    send_block = "<leader>tsb",
-    send_step = "<leader>tsn",
-    send_file = "<leader>tsf",
-    send_visual = "<leader>ts",
-    send_motion = "<leader>tsm",
-    select_terminal = "<leader>tst",
-    show_last = "<leader>tsl",
-    show_history = "<leader>tsh",
-    copy_output = "<leader>tso",
-    paste_output = "<leader>tsp",
-    toggle_paste = "<leader>tsu",  -- Toggle auto-pasting commented outcome into buffer
-    toggle_copy = "<leader>tsy",   -- Toggle auto-copying outcome to clipboard
+    send_line = "<leader>rr",
+    send_block = "<leader>rb",
+    send_step = "<leader>rn",
+    send_file = "<leader>rf",
+    send_visual = "<leader>r",
+    send_motion = "<leader>rm",
+    select_terminal = "<leader>rs",
+    show_last = "<leader>rl",
+    show_history = "<leader>rh",
+    copy_output = "<leader>ro",
+    paste_output = "<leader>rp",
+    toggle_paste = "<leader>rP",  -- Toggle auto-pasting commented outcome into buffer
+    toggle_copy = "<leader>rC",   -- Toggle auto-copying outcome to clipboard
   },
 }
 
@@ -143,6 +143,9 @@ M.options = vim.deepcopy(M.defaults)
 function M.setup(user_opts)
   if user_opts then
     M.options = vim.tbl_deep_extend("force", M.defaults, user_opts)
+    if user_opts.keymaps == false then
+      M.options.keymaps = false
+    end
   else
     M.options = vim.deepcopy(M.defaults)
   end
